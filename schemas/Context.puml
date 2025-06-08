@@ -1,0 +1,13 @@
+@startuml
+title Тёплый Дом
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Пользователь", "Управляет устройствами и настраивает сценарии")
+System_Ext(thirdPartySystem, "Сторонние сервисы", "Интеграция через API")
+
+System(monolith, "Монолитное приложение Тёплого Дома", "Go + PostgreSQL")
+
+Rel(user, monolith, "Использует для управления домом и настройками")
+Rel(monolith, thirdPartySystem, "Интеграция через API")
+@enduml

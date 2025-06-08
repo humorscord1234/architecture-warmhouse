@@ -1,0 +1,61 @@
+@startuml
+title Тёплый Дом
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+System_Boundary(warmhouse, "Тёплый Дом") {
+
+  Container(userApiGateway, "User API Gateway", "Java + Spring Cloud Gateway", "Входная точка для пользователей")
+  Container(integrationApiGateway, "Integration API Gateway", "Java + Spring Cloud Gateway", "Входная точка для внешних систем")
+
+  Container(devicesService, "Управление устройствами", "Java + Spring Boot", "Подключение, управление и мониторинг устройств")
+  ContainerDb(devicesDb, "Devices DB", "PostgreSQL", "Данные об устройствах")
+
+  Container(userService, "Управление пользователями", "Java + Spring Boot", "Регистрация, авторизация, настройка профиля")
+  ContainerDb(usersDb, "Users DB", "PostgreSQL", "Данные пользователей")
+
+  Container(telemetryService, "Телеметрия", "Java + Spring Boot", "Сбор и хранение данных с датчиков")
+  ContainerDb(telemetryDb, "Telemetry DB", "Prometheus / Victoria Metrics", "Телеметрические данные")
+
+  Container(automationService, "Сценарии и автоматизация", "Java + Spring Boot", "Настройка и выполнение сценариев")
+  ContainerDb(automationDb, "Automation DB", "PostgreSQL", "Сценарии и правила")
+
+  Container(notificationsService, "Уведомления", "Java + Spring Boot", "Генерация и отправка email/SMS")
+  ContainerDb(notificationsDb, "Notifications DB", "PostgreSQL", "Настройки и события уведомлений")
+
+  Container(integrationService, "Интеграция с внешними сервисами", "Java + Spring Boot", "Подключение сторонних API")
+  ContainerDb(integrationDb, "Integration DB", "PostgreSQL", "Метаданные внешних сервисов")
+
+  Container(messageQueue, "Message Broker", "Kafka / RabbitMQ", "Асинхронный обмен событиями")
+}
+
+System_Ext(externalDevice, "Внешние устройства", "Устройства сторонних производителей")
+Person(user, "Пользователь", "Использует приложение для управления")
+
+' Взаимодействие пользователей
+Rel(user, userApiGateway, "Взаимодействует с системой")
+Rel(userApiGateway, devicesService, "Маршрутизирует запросы")
+Rel(userApiGateway, userService, "Маршрутизирует запросы")
+Rel(userApiGateway, telemetryService, "Маршрутизирует запросы")
+Rel(userApiGateway, automationService, "Маршрутизирует запросы")
+Rel(userApiGateway, notificationsService, "Маршрутизирует запросы")
+
+' Взаимодействие внешних систем
+Rel(externalDevice, integrationApiGateway, "Взаимодействует с системой")
+Rel(integrationApiGateway, integrationService, "Маршрутизирует запросы")
+
+' Соединения с брокером
+Rel(devicesService, messageQueue, "Публикует события")
+Rel(telemetryService, messageQueue, "Слушает события")
+Rel(automationService, messageQueue, "Слушает события")
+Rel(notificationsService, messageQueue, "Слушает события")
+Rel(integrationService, messageQueue, "Обменивается событиями")
+
+' Связи с базами данных
+Rel(devicesService, devicesDb, "Чтение/запись")
+Rel(userService, usersDb, "Чтение/запись")
+Rel(telemetryService, telemetryDb, "Чтение/запись")
+Rel(automationService, automationDb, "Чтение/запись")
+Rel(notificationsService, notificationsDb, "Чтение/запись")
+Rel(integrationService, integrationDb, "Чтение/запись")
+@enduml

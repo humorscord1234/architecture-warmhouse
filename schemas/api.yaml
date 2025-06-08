@@ -1,0 +1,160 @@
+
+openapi: 3.0.4
+info:
+  title: Device Service API
+  version: 1.0.0
+servers:
+  - url: https://url/devices
+
+paths:
+
+  /:
+    get:
+      summary: Получить список всех устройств
+      tags: [Device]
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          description: Поле сортировки (например, name, status, lastSeen)
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: Направление сортировки (asc или desc)
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: search
+          in: query
+          description: Поиск по имени или серийному номеру
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Фильтрация по статусу
+          required: false
+          schema:
+            type: string
+            enum: [ENABLED, DISABLED]
+        - name: houseId
+          in: query
+          description: Фильтрация по идентификатору дома
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список устройств
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+
+  /{deviceId}:
+    get:
+      summary: Получить информацию об устройстве
+      tags: [Device]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Устройство найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Устройство не найдено
+
+    put:
+      summary: Обновить устройство
+      tags: [Device]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '200': { description: Статус обновлён }
+        '404': { description: Устройство не найдено }
+
+  /register:
+    post:
+      summary: Зарегистрировать новое устройство
+      tags: [Device]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '201':
+          description: Устройство зарегистрировано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400': { description: Ошибка в данных запроса }
+
+components:
+  schemas:
+
+    Device:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        serialNumber: { type: string }
+        name: { type: string }
+        typeId: { type: string, format: uuid }
+        typeName: { type: string }
+        houseId: { type: string, format: uuid }
+        status: { type: string, enum: [ENABLED, DISABLED] }
+        userId: { type: string, format: uuid }
+        lastSeen: { type: string, format: date-time }
+      example:
+        id: "87b22702-4a22-4e7d-b39d-2e5100e0c921"
+        serialNumber: "ABC123456"
+        name: "Гостиная — термостат"
+        typeId: "aabbccdd-eeff-0011-2233-445566778899"
+        typeName: "THERMOSTAT"
+        houseId: "c3fa132e-8e67-4216-9229-e3b0a8bffe18"
+        userId: "e7f3c50d-8764-4c93-9801-5a314ebf6509"
+        status: "ENABLED"
+        lastSeen: "2025-06-08T10:12:00Z"
