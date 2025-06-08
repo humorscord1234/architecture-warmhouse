@@ -1,0 +1,85 @@
+@startuml
+title UML Class Diagram — UserService (User Management)
+
+skinparam classAttributeIconSize 0
+
+package "Domain" {
+  class User {
+    - id: UUID
+    - email: String
+    - passwordHash: String
+    - name: String
+    - phone: String
+    - roles: List<Role>
+    + isPasswordCorrect(password: String): boolean
+  }
+
+  enum Role {
+    USER
+    ADMIN
+  }
+
+  class LoginRequest {
+    + email: String
+    + password: String
+  }
+
+  class UpdateUserProfileRequest {
+    + name: String
+    + phone: String
+  }
+
+  class JwtToken {
+    + token: String
+    + expiresAt: LocalDateTime
+  }
+}
+
+package "Application Service" {
+  class AuthManager {
+    - userRepository: UserRepository
+    + authenticate(email: String, password: String): JwtToken
+  }
+
+  class UserProfileManager {
+    - userRepository: UserRepository
+    - notificationClient: NotificationClient
+    + updateProfile(id: UUID, dto: UpdateUserProfileRequest): void
+    + getUser(id: UUID): User
+  }
+}
+
+package "Interfaces" {
+  class UserController {
+    - authManager: AuthManager
+    - profileManager: UserProfileManager
+    + login(request: LoginRequest): ResponseEntity<JwtToken>
+    + updateProfile(id: UUID, dto: UpdateUserProfileRequest): ResponseEntity
+    + getProfile(id: UUID): ResponseEntity<User>
+  }
+
+
+}
+
+package "Infrastructure" {
+  interface UserRepository {
+    + findByEmail(email: String): Optional<User>
+    + findById(id: UUID): Optional<User>
+    + save(user: User): void
+  }
+
+  interface NotificationClient {
+    + sendProfileUpdatedNotification(user: User): void
+  }
+
+
+}
+
+UserController --> AuthManager
+UserController --> UserProfileManager
+UserProfileManager --> UserRepository
+UserProfileManager --> NotificationClient
+AuthManager --> UserRepository
+User --> Role
+
+@enduml

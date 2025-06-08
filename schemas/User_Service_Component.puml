@@ -1,0 +1,22 @@
+@startuml
+title Тёплый Дом: User Service
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(userService, "Управление пользователями") {
+    Component(userApi, "User API", "Spring REST", "Обрабатывает HTTP-запросы на регистрацию, авторизацию/аутентификацию, CRUD профиля")
+    Component(authManager, "Authentication Manager", "", "Проверка логина и пароля, генерация JWT")
+    Component(userProfileManager, "User Profile Manager", "", "Обновление и хранение пользовательских данных")
+    Component(notificationClient, "Notification Client", "REST Client", "Отправка уведомлений через внешний сервис (email/SMS)")
+    Component(userRepository, "User Repository", "JOOQ", "Работа с данными пользователей в БД")
+}
+
+ComponentDb(userDb, "User Database", "PostgreSQL", "Хранит информацию о пользователях")
+
+Rel(userApi, authManager, "Передает логин и пароль для аутентификации")
+Rel(userApi, userProfileManager, "Передает команды обновления профиля")
+Rel(userApi, notificationClient, "Отправляет команду на уведомление")
+Rel(userProfileManager, userRepository, "Чтение и запись данных о пользователях")
+Rel(authManager, userRepository, "Доступ к учетным данным")
+Rel(userRepository, userDb, "Чтение и запись данных")
+@enduml

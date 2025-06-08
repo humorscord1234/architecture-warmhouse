@@ -1,0 +1,100 @@
+@startuml
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+
+' Таблица: User
+table(User) {
+  primary_key(id): UUID
+  email: String
+  password_hash: String
+  name: String
+  phone: String
+  role: String
+}
+
+' Таблица: House
+table(House) {
+  primary_key(id): UUID
+  owner_id: UUID
+  address: String
+}
+
+' Таблица: Device
+table(Device) {
+  primary_key(id): UUID
+  serial_number: String
+  name: String
+  type_id: UUID
+  house_id: UUID
+  status: String
+}
+
+' Таблица: DeviceType
+table(DeviceType) {
+  primary_key(id): UUID
+  name: String
+  supported_features: TEXT
+}
+
+' Таблица: TelemetryData
+table(TelemetryData) {
+  primary_key(id): UUID
+  device_id: UUID
+  timestamp: TIMESTAMP
+  temperature: DOUBLE
+  humidity: DOUBLE
+  signal_strength: INT
+}
+
+' Таблица: DeviceEvent
+table(DeviceEvent) {
+  primary_key(id): UUID
+  device_id: UUID
+  event_type: String
+  payload: TEXT
+  timestamp: TIMESTAMP
+}
+
+' Таблица: Notification
+table(Notification) {
+  primary_key(id): UUID
+  user_id: UUID
+  channel: String
+  message: TEXT
+  status: String
+  sent_at: TIMESTAMP
+}
+
+' Таблица: NotificationPreference
+table(NotificationPreference) {
+  primary_key(id): UUID
+  user_id: UUID
+  event_type: String
+  enabled: BOOLEAN
+  channel: String
+}
+
+' Таблица: AutomationRule
+table(AutomationRule) {
+  primary_key(id): UUID
+  user_id: UUID
+  house_id: UUID
+  name: String
+  condition: TEXT
+  action: TEXT
+  is_active: BOOLEAN
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+' Связи
+House::owner_id --> User::id
+Device::house_id --> House::id
+Device::type_id --> DeviceType::id
+TelemetryData::device_id --> Device::id
+DeviceEvent::device_id --> Device::id
+Notification::user_id --> User::id
+NotificationPreference::user_id --> User::id
+AutomationRule::user_id --> User::id
+AutomationRule::house_id --> House::id
+@enduml
