@@ -23,7 +23,7 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Copy the binary from the build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+COPY --from=build /app/target/app.jar app.jar
 
 # Expose the port the app runs on
 EXPOSE 8081

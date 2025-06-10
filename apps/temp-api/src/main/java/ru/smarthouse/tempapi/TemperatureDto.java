@@ -1,5 +1,9 @@
 package ru.smarthouse.tempapi;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDateTime;
+
 public class TemperatureDto {
 
     @JsonProperty("value")
