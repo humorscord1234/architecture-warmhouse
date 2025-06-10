@@ -1,0 +1,29 @@
+@startuml
+title Тёплый Дом : Device Service
+
+!include https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container(devicesService, "Управление устройствами") {
+
+    Component(devicesApi, "Devices API", "Spring REST", "Обрабатывает входящие HTTP-запросы к устройствам")
+
+    Component(deviceRegistrationHandler, "Device Registration Handler", "", "Обработка регистрации и привязки новых устройств")
+    Component(deviceTelemetryReceiver, "Device Telemetry Receiver", "", "Получение телеметрии от устройств")
+    Component(deviceEventProcessor, "Device Event Processor", "", "Обработка событий от устройств и генерация внутренних событий")
+
+    Component(deviceRepository, "Device Repository", "JOOQ", "Работа с данными устройств в БД")
+    Component(eventPublisher, "Event Publisher", "", "Отправка событий в очередь (Kafka/ RabbitMQ)")
+
+}
+
+ComponentDb(deviceDb, "Device Database", "PostgreSQL", "Данные об устройствах")
+
+Rel(devicesApi, deviceRegistrationHandler, "Передает команды подключения устройства")
+Rel(devicesApi, deviceTelemetryReceiver, "Получает и передает телеметрию от устройств")
+Rel(devicesApi, deviceEventProcessor, "Передает управляющие команды и события")
+Rel(deviceRegistrationHandler, deviceRepository, "Создает или обновляет данные об устройстве")
+Rel(deviceTelemetryReceiver, eventPublisher, "Публикует телеметрические данные в очередь")
+Rel(deviceEventProcessor, deviceRepository, "Читает состояние устройства")
+Rel(deviceEventProcessor, eventPublisher, "Публикует события устройства")
+Rel(deviceRepository, deviceDb, "Чтение и запись данных")
+@enduml
